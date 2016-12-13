@@ -39,6 +39,7 @@
         style="@style/AppTheme.Button"
         android:id="@+id/submit"
         android:text="@string/submit"
-        android:gravity="right"
+        android:layout_gravity="right"
         />
 </LinearLayout>
+
