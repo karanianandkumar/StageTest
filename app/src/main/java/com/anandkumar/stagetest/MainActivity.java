@@ -1,5 +1,6 @@
 package com.anandkumar.stagetest;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private TextInputLayout textInputLayout;
     private Button submitButton;
     private EditText inputName;
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!validateName()) {
                     return;
                 } else {
+
+                    showDialog();
                     //TODO: Read Github REST API
                     GithubInterface githubService=GithubClient.getClient().create(GithubInterface.class);
 
@@ -47,14 +52,29 @@ public class MainActivity extends AppCompatActivity {
                     events.enqueue(new Callback<List<Event>>() {
                         @Override
                         public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
-                            int activities=response.body().size();
-                            Log.d("Activities:: "," "+activities);
-                            Log.d("1 st Event type: : ",response.body().get(1).getType());
+
+                            dismissDialog();
+                            if(response.isSuccessful()){
+                                List<Event> activities=response.body();
+
+                                /*for(Event e:activities){
+                                    Log.d("Event Type :: ",e.getType());
+                                }*/
+
+                                //TODO: Add all events to recyclerview.
+                            }else{
+                                Toast.makeText(MainActivity.this,"Please Enter Correct User Name",Toast.LENGTH_SHORT).show();
+                            }
+
+
+
+
                         }
 
                         @Override
                         public void onFailure(Call<List<Event>> call, Throwable t) {
 
+                                Log.d("Failure",t.toString());
                         }
                     });
                 }
@@ -102,6 +122,18 @@ public class MainActivity extends AppCompatActivity {
         if (view.requestFocus()) {
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+    }
+
+    private void showDialog(){
+        pDialog = new ProgressDialog(MainActivity.this);
+        pDialog.setMessage("Loading...");
+        pDialog.setCancelable(false);
+        pDialog.show();
+    }
+
+    public void dismissDialog(){
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 
 }
